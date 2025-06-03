@@ -12,7 +12,7 @@ export const QuickActions = () => {
         <CardTitle className="text-slate-900">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button asChild className="w-full justify-start bg-blue-600 hover:bg-blue-700" size="lg">
+        <Button asChild className="w-full justify-start bg-orange-600 hover:bg-orange-700" size="lg">
           <Link to="/upload">
             <Upload className="w-4 h-4 mr-2" />
             Upload Documents

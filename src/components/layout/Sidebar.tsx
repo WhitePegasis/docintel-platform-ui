@@ -26,7 +26,7 @@ export const Sidebar = () => {
             className={cn(
               "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
               location.pathname === item.path
-                ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                ? "bg-orange-50 text-orange-700 border border-orange-200" 
                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             )}
           >

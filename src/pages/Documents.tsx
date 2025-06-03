@@ -95,7 +95,7 @@ const Documents = () => {
                         onClick={() => setSelectedDirectory(directory)}
                       >
                         <div className="flex items-center space-x-3 mb-2">
-                          <Folder className="w-6 h-6 text-blue-600" />
+                          <Folder className="w-6 h-6 text-orange-600" />
                           <h3 className="font-medium text-slate-900">{directory.name}</h3>
                         </div>
                         <p className="text-sm text-slate-500">
@@ -109,7 +109,7 @@ const Documents = () => {
                     {filteredDocuments.map((doc) => (
                       <div key={doc.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
                         <div className="flex items-center space-x-4">
-                          <FileText className="w-8 h-8 text-blue-600" />
+                          <FileText className="w-8 h-8 text-orange-600" />
                           <div>
                             <h4 className="font-medium text-slate-900">{doc.name}</h4>
                             <p className="text-sm text-slate-500">{doc.type} • {doc.size} • Uploaded {doc.uploaded}</p>

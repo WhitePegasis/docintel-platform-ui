@@ -9,7 +9,7 @@ export const Header = () => {
     <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 fixed w-full top-0 z-50">
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">D</span>
           </div>
           <span className="text-xl font-bold text-slate-900">Docintel</span>
