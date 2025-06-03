@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface UploadedFile {
@@ -12,10 +12,23 @@ interface UploadedFile {
   progress: number;
 }
 
-export const DocumentUpload = () => {
+interface Directory {
+  id: string;
+  name: string;
+  documentCount: number;
+  created: string;
+}
+
+interface DocumentUploadProps {
+  selectedDirectory: Directory | null;
+}
+
+export const DocumentUpload = ({ selectedDirectory }: DocumentUploadProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (!selectedDirectory) return;
+    
     const newFiles = acceptedFiles.map((file) => ({
       file,
       id: Math.random().toString(36).substring(7),
@@ -38,7 +51,7 @@ export const DocumentUpload = () => {
       
       setTimeout(() => clearInterval(interval), 2000);
     });
-  }, []);
+  }, [selectedDirectory]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -50,16 +63,42 @@ export const DocumentUpload = () => {
       'image/*': ['.png', '.jpg', '.jpeg'],
     },
     multiple: true,
+    disabled: !selectedDirectory,
   });
 
   const removeFile = (id: string) => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
+  if (!selectedDirectory) {
+    return (
+      <Card className="border-slate-200">
+        <CardContent className="p-8 text-center">
+          <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 mb-2">
+            Select a Directory
+          </h3>
+          <p className="text-slate-600">
+            Please select or create a directory above to upload documents
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="border-slate-200">
         <CardContent className="p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-medium text-slate-900 mb-1">
+              Upload to: {selectedDirectory.name}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Documents will be added to this directory
+            </p>
+          </div>
+          
           <div
             {...getRootProps()}
             className={cn(

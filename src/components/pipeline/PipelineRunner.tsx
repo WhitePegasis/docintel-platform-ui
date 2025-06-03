@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Play, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Play, Clock, CheckCircle, AlertCircle, Folder } from 'lucide-react';
 
 interface PipelineStep {
   id: string;
@@ -13,6 +14,12 @@ interface PipelineStep {
   enabled: boolean;
   status: 'idle' | 'running' | 'completed' | 'error';
   dependencies?: string[];
+}
+
+interface Directory {
+  id: string;
+  name: string;
+  documentCount: number;
 }
 
 const initialSteps: PipelineStep[] = [
@@ -49,8 +56,15 @@ const initialSteps: PipelineStep[] = [
   },
 ];
 
+const availableDirectories: Directory[] = [
+  { id: '1', name: 'Legal Documents', documentCount: 12 },
+  { id: '2', name: 'Financial Reports', documentCount: 8 },
+  { id: '3', name: 'Contracts', documentCount: 15 },
+];
+
 export const PipelineRunner = () => {
   const [steps, setSteps] = useState<PipelineStep[]>(initialSteps);
+  const [selectedDirectories, setSelectedDirectories] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const toggleStep = (stepId: string) => {
@@ -61,7 +75,17 @@ export const PipelineRunner = () => {
     );
   };
 
+  const toggleDirectory = (directoryId: string) => {
+    setSelectedDirectories((prev) =>
+      prev.includes(directoryId)
+        ? prev.filter((id) => id !== directoryId)
+        : [...prev, directoryId]
+    );
+  };
+
   const runPipeline = async () => {
+    if (selectedDirectories.length === 0) return;
+    
     setIsRunning(true);
     const enabledSteps = steps.filter((step) => step.enabled);
     
@@ -109,56 +133,98 @@ export const PipelineRunner = () => {
     );
   };
 
+  const canRunPipeline = selectedDirectories.length > 0 && steps.some((s) => s.enabled) && !isRunning;
+
   return (
-    <Card className="border-slate-200">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-slate-900">Pipeline Configuration</CardTitle>
-          <Button
-            onClick={runPipeline}
-            disabled={isRunning || !steps.some((s) => s.enabled)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            {isRunning ? 'Running...' : 'Run Pipeline'}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {steps.map((step, index) => (
-          <div key={step.id} className="p-4 border border-slate-200 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <Switch
-                  checked={step.enabled}
-                  onCheckedChange={() => toggleStep(step.id)}
+    <div className="space-y-6">
+      <Card className="border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-slate-900">Select Directories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {availableDirectories.map((directory) => (
+              <div key={directory.id} className="flex items-center space-x-3 p-3 border border-slate-200 rounded-lg">
+                <Checkbox
+                  id={directory.id}
+                  checked={selectedDirectories.includes(directory.id)}
+                  onCheckedChange={() => toggleDirectory(directory.id)}
                   disabled={isRunning}
                 />
-                <div>
-                  <h4 className="text-sm font-medium text-slate-900">{step.name}</h4>
-                  <p className="text-xs text-slate-500">{step.description}</p>
+                <Folder className="w-5 h-5 text-slate-400" />
+                <div className="flex-1">
+                  <label
+                    htmlFor={directory.id}
+                    className="text-sm font-medium text-slate-900 cursor-pointer"
+                  >
+                    {directory.name}
+                  </label>
+                  <p className="text-xs text-slate-500">{directory.documentCount} documents</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                {getStatusIcon(step.status)}
-                {getStatusBadge(step.status)}
-              </div>
-            </div>
-            
-            {step.dependencies && (
-              <div className="text-xs text-slate-500">
-                Dependencies: {step.dependencies.join(', ')}
-              </div>
-            )}
-            
-            {index < steps.length - 1 && step.enabled && (
-              <div className="flex justify-center mt-3">
-                <div className="w-px h-4 bg-slate-300"></div>
-              </div>
-            )}
+            ))}
           </div>
-        ))}
-      </CardContent>
-    </Card>
+          
+          {selectedDirectories.length > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                Selected {selectedDirectories.length} directories for processing
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-slate-200">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-slate-900">Pipeline Configuration</CardTitle>
+            <Button
+              onClick={runPipeline}
+              disabled={!canRunPipeline}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              {isRunning ? 'Running...' : 'Run Pipeline'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {steps.map((step, index) => (
+            <div key={step.id} className="p-4 border border-slate-200 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Switch
+                    checked={step.enabled}
+                    onCheckedChange={() => toggleStep(step.id)}
+                    disabled={isRunning}
+                  />
+                  <div>
+                    <h4 className="text-sm font-medium text-slate-900">{step.name}</h4>
+                    <p className="text-xs text-slate-500">{step.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {getStatusIcon(step.status)}
+                  {getStatusBadge(step.status)}
+                </div>
+              </div>
+              
+              {step.dependencies && (
+                <div className="text-xs text-slate-500">
+                  Dependencies: {step.dependencies.join(', ')}
+                </div>
+              )}
+              
+              {index < steps.length - 1 && step.enabled && (
+                <div className="flex justify-center mt-3">
+                  <div className="w-px h-4 bg-slate-300"></div>
+                </div>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
