@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, Play, FileText, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const QuickActions = () => {
   return (
@@ -11,21 +12,29 @@ export const QuickActions = () => {
         <CardTitle className="text-slate-900">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button className="w-full justify-start bg-blue-600 hover:bg-blue-700" size="lg">
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Documents
+        <Button asChild className="w-full justify-start bg-blue-600 hover:bg-blue-700" size="lg">
+          <Link to="/upload">
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Documents
+          </Link>
         </Button>
-        <Button variant="outline" className="w-full justify-start border-slate-200" size="lg">
-          <Play className="w-4 h-4 mr-2" />
-          Run Pipeline
+        <Button asChild variant="outline" className="w-full justify-start border-slate-200" size="lg">
+          <Link to="/processing">
+            <Play className="w-4 h-4 mr-2" />
+            Run Pipeline
+          </Link>
         </Button>
-        <Button variant="outline" className="w-full justify-start border-slate-200" size="lg">
-          <FileText className="w-4 h-4 mr-2" />
-          Create Template
+        <Button asChild variant="outline" className="w-full justify-start border-slate-200" size="lg">
+          <Link to="/documents">
+            <FileText className="w-4 h-4 mr-2" />
+            View Documents
+          </Link>
         </Button>
-        <Button variant="outline" className="w-full justify-start border-slate-200" size="lg">
-          <BarChart3 className="w-4 h-4 mr-2" />
-          View Analytics
+        <Button asChild variant="outline" className="w-full justify-start border-slate-200" size="lg">
+          <Link to="/analytics">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            View Analytics
+          </Link>
         </Button>
       </CardContent>
     </Card>
