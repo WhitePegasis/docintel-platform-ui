@@ -6,8 +6,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import { DocumentViewer } from '@/components/viewer/DocumentViewer';
+import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle, Minimize2, Maximize2 } from 'lucide-react';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface PipelineStep {
   id: string;
@@ -22,6 +22,7 @@ interface PipelineStep {
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isLeftPanelMinimized, setIsLeftPanelMinimized] = React.useState(false);
 
   // Mock document data
   const document = {
@@ -114,10 +115,10 @@ const DocumentDetail = () => {
       <Header />
       <div className="flex pt-16">
         <Sidebar />
-        <main className="flex-1 p-6 ml-64">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 ml-64">
+          <div className="p-6">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="flex items-center space-x-4 mb-4">
                 <Button 
                   variant="ghost" 
@@ -127,7 +128,7 @@ const DocumentDetail = () => {
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-8 h-8 text-blue-600" />
+                  <FileText className="w-8 h-8 text-orange-600" />
                   <div>
                     <h1 className="text-3xl font-bold text-slate-900">{document.name}</h1>
                     <p className="text-slate-600">{document.directory} • {document.type} • {document.size}</p>
@@ -148,50 +149,96 @@ const DocumentDetail = () => {
               </div>
             </div>
 
-            {/* Pipeline Status */}
-            <div className="mb-8">
-              <Card className="border-slate-200">
-                <CardHeader>
-                  <CardTitle className="text-slate-900">Processing Pipeline</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {pipelineSteps.map((step, index) => (
-                      <div key={step.id} className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-medium">
-                            {index + 1}
-                          </div>
-                          {getStatusIcon(step.status)}
-                          <div>
-                            <h4 className="font-medium text-slate-900">{step.name}</h4>
-                            {step.duration && (
-                              <p className="text-sm text-slate-500">Duration: {step.duration}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex-1" />
-                        <div className="text-right">
-                          <Badge className={getStatusColor(step.status)}>
-                            {step.status}
-                          </Badge>
-                          {step.output && (
-                            <div className="mt-1 text-xs text-slate-500">
-                              {Object.entries(step.output).map(([key, value]) => (
-                                <div key={key}>{key}: {typeof value === 'number' ? value.toLocaleString() : String(value)}</div>
-                              ))}
+            {/* Resizable Layout */}
+            <div className="h-[calc(100vh-280px)] border border-slate-200 rounded-lg overflow-hidden">
+              <ResizablePanelGroup direction="horizontal">
+                <ResizablePanel 
+                  defaultSize={isLeftPanelMinimized ? 5 : 40} 
+                  minSize={5}
+                  maxSize={60}
+                  className="bg-white"
+                >
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                      <h3 className={`font-medium text-slate-900 ${isLeftPanelMinimized ? 'hidden' : ''}`}>
+                        Processing Pipeline
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsLeftPanelMinimized(!isLeftPanelMinimized)}
+                        className="p-1"
+                      >
+                        {isLeftPanelMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    
+                    {!isLeftPanelMinimized && (
+                      <div className="flex-1 overflow-auto p-4">
+                        <div className="space-y-3">
+                          {pipelineSteps.map((step, index) => (
+                            <div key={step.id} className="p-3 border border-slate-200 rounded-lg">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
+                                  {index + 1}
+                                </div>
+                                {getStatusIcon(step.status)}
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-slate-900 text-sm">{step.name}</h4>
+                                  {step.duration && (
+                                    <p className="text-xs text-slate-500">{step.duration}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Badge className={`text-xs ${getStatusColor(step.status)}`}>
+                                  {step.status}
+                                </Badge>
+                              </div>
+                              {step.output && (
+                                <div className="mt-2 text-xs text-slate-500">
+                                  {Object.entries(step.output).map(([key, value]) => (
+                                    <div key={key}>{key}: {typeof value === 'number' ? value.toLocaleString() : String(value)}</div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          )}
+                          ))}
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                </ResizablePanel>
+                
+                <ResizableHandle withHandle />
+                
+                <ResizablePanel defaultSize={isLeftPanelMinimized ? 95 : 60} className="bg-slate-100">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
+                      <h3 className="font-medium text-slate-900">Document Viewer</h3>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm">
+                          Zoom In
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          Zoom Out
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 p-4">
+                      <div className="w-full h-full bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
+                        <iframe
+                          src="/placeholder.pdf"
+                          className="w-full h-full rounded-lg"
+                          title={document.name}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </div>
-
-            {/* Document Viewer */}
-            <DocumentViewer />
           </div>
         </main>
       </div>
