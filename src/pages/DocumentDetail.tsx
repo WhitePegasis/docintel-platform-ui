@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -7,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle, Copy } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PipelineStep {
   id: string;
@@ -22,6 +22,8 @@ interface PipelineStep {
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 3; // Mock total pages for demonstration
 
   // Mock document data
   const document = {
@@ -83,31 +85,47 @@ const DocumentDetail = () => {
     }
   ];
 
-  // Mock document content
+  // Mock document content with page-specific data
   const mockDocument = {
-    rawText: `AGREEMENT FOR PROFESSIONAL SERVICES
+    rawText: {
+      1: `AGREEMENT FOR PROFESSIONAL SERVICES
 
 This Agreement is entered into on January 15, 2024, between TechCorp Inc., a corporation organized under the laws of California ("Company"), and John Smith Consulting LLC, a limited liability company organized under the laws of Delaware ("Consultant").
 
 1. SCOPE OF WORK
-Consultant agrees to provide software development consulting services to Company for the period beginning February 1, 2024, and ending December 31, 2024.
-
-2. COMPENSATION
+Consultant agrees to provide software development consulting services to Company for the period beginning February 1, 2024, and ending December 31, 2024.`,
+      2: `2. COMPENSATION
 Company agrees to pay Consultant $150 per hour for services rendered under this Agreement. Payment shall be made within 30 days of receipt of invoice.
 
 3. CONFIDENTIALITY
 Both parties acknowledge that they may have access to confidential information and agree to maintain such information in strict confidence.`,
-    entities: [
-      { text: 'TechCorp Inc.', type: 'ORG', start: 95, end: 108, confidence: 0.95 },
-      { text: 'California', type: 'LOC', start: 155, end: 165, confidence: 0.92 },
-      { text: 'John Smith Consulting LLC', type: 'ORG', start: 188, end: 213, confidence: 0.98 },
-      { text: 'Delaware', type: 'LOC', start: 275, end: 283, confidence: 0.89 },
-      { text: 'January 15, 2024', type: 'DATE', start: 65, end: 81, confidence: 0.99 },
-      { text: 'February 1, 2024', type: 'DATE', start: 450, end: 466, confidence: 0.97 },
-      { text: 'December 31, 2024', type: 'DATE', start: 485, end: 503, confidence: 0.96 },
-      { text: '$150', type: 'MONEY', start: 590, end: 594, confidence: 0.94 },
-      { text: '30 days', type: 'DATE', start: 670, end: 677, confidence: 0.91 },
-    ],
+      3: `4. TERMINATION
+This Agreement may be terminated by either party with 30 days written notice.
+
+5. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of California.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.`
+    },
+    entities: {
+      1: [
+        { text: 'TechCorp Inc.', type: 'ORG', start: 95, end: 108, confidence: 0.95 },
+        { text: 'California', type: 'LOC', start: 155, end: 165, confidence: 0.92 },
+        { text: 'John Smith Consulting LLC', type: 'ORG', start: 188, end: 213, confidence: 0.98 },
+        { text: 'Delaware', type: 'LOC', start: 275, end: 283, confidence: 0.89 },
+        { text: 'January 15, 2024', type: 'DATE', start: 65, end: 81, confidence: 0.99 },
+        { text: 'February 1, 2024', type: 'DATE', start: 450, end: 466, confidence: 0.97 },
+        { text: 'December 31, 2024', type: 'DATE', start: 485, end: 503, confidence: 0.96 }
+      ],
+      2: [
+        { text: '$150', type: 'MONEY', start: 90, end: 94, confidence: 0.94 },
+        { text: '30 days', type: 'DATE', start: 170, end: 177, confidence: 0.91 }
+      ],
+      3: [
+        { text: '30 days', type: 'DATE', start: 70, end: 77, confidence: 0.91 },
+        { text: 'California', type: 'LOC', start: 180, end: 190, confidence: 0.92 }
+      ]
+    },
     classification: {
       type: 'Contract',
       confidence: 0.94,
@@ -195,11 +213,52 @@ Both parties acknowledge that they may have access to confidential information a
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   };
 
-  const entityGroups = mockDocument.entities.reduce((acc, entity) => {
+  const currentPageEntities = mockDocument.entities[currentPage as keyof typeof mockDocument.entities] || [];
+  const entityGroups = currentPageEntities.reduce((acc, entity) => {
     if (!acc[entity.type]) acc[entity.type] = [];
     acc[entity.type].push(entity);
     return acc;
   }, {} as Record<string, any[]>);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const PaginationControls = () => (
+    <div className="flex items-center justify-between mt-4">
+      <span className="text-sm text-slate-600">
+        Page {currentPage} of {totalPages}
+      </span>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -309,11 +368,18 @@ Both parties acknowledge that they may have access to confidential information a
                       </TabsContent>
 
                       <TabsContent value="annotated" className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-slate-900">Annotated Text</h3>
+                        </div>
                         <div className="bg-slate-50 p-4 rounded-lg max-h-96 overflow-y-auto">
                           <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {highlightText(mockDocument.rawText, mockDocument.entities)}
+                            {highlightText(
+                              mockDocument.rawText[currentPage as keyof typeof mockDocument.rawText] || '', 
+                              currentPageEntities
+                            )}
                           </div>
                         </div>
+                        <PaginationControls />
                       </TabsContent>
 
                       <TabsContent value="raw" className="space-y-4">
@@ -326,9 +392,10 @@ Both parties acknowledge that they may have access to confidential information a
                         </div>
                         <div className="bg-slate-50 p-4 rounded-lg max-h-96 overflow-y-auto">
                           <pre className="text-sm whitespace-pre-wrap text-slate-700">
-                            {mockDocument.rawText}
+                            {mockDocument.rawText[currentPage as keyof typeof mockDocument.rawText] || ''}
                           </pre>
                         </div>
+                        <PaginationControls />
                       </TabsContent>
 
                       <TabsContent value="entities" className="space-y-4">
@@ -351,6 +418,7 @@ Both parties acknowledge that they may have access to confidential information a
                             </div>
                           ))}
                         </div>
+                        <PaginationControls />
                       </TabsContent>
 
                       <TabsContent value="metadata" className="space-y-4">
@@ -385,7 +453,7 @@ Both parties acknowledge that they may have access to confidential information a
                             </div>
                             <div>
                               <span className="text-sm font-medium text-slate-600">Processed:</span>
-              <p className="text-sm text-slate-900">{new Date(mockDocument.metadata.processedAt).toLocaleString()}</p>
+                              <p className="text-sm text-slate-900">{new Date(mockDocument.metadata.processedAt).toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
