@@ -6,9 +6,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle, Minimize2, Maximize2, Copy } from 'lucide-react';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { ArrowLeft, Download, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { DocumentViewer } from '@/components/viewer/DocumentViewer';
 
 interface PipelineStep {
   id: string;
@@ -23,7 +22,6 @@ interface PipelineStep {
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isRightPanelMinimized, setIsRightPanelMinimized] = React.useState(false);
 
   // Mock document data
   const document = {
@@ -45,12 +43,7 @@ const DocumentDetail = () => {
       startTime: '2024-01-15T10:32:00Z',
       endTime: '2024-01-15T10:32:15Z',
       duration: '15s',
-      output: { 
-        type: 'Contract', 
-        confidence: 0.94,
-        subtypes: ['Service Agreement', 'Consulting Agreement'],
-        classification_details: 'Identified as a professional services contract based on language patterns and document structure.'
-      }
+      output: { type: 'Contract', confidence: 0.94 }
     },
     {
       id: '2',
@@ -59,16 +52,7 @@ const DocumentDetail = () => {
       startTime: '2024-01-15T10:32:15Z',
       endTime: '2024-01-15T10:33:45Z',
       duration: '1m 30s',
-      output: { 
-        pages: 3, 
-        wordsExtracted: 1247,
-        confidence: 0.98,
-        text_preview: 'AGREEMENT FOR PROFESSIONAL SERVICES\n\nThis Agreement is entered into on January 15, 2024...',
-        quality_metrics: {
-          clarity: 0.95,
-          completeness: 0.97
-        }
-      }
+      output: { pages: 3, wordsExtracted: 1247 }
     },
     {
       id: '3',
@@ -77,12 +61,7 @@ const DocumentDetail = () => {
       startTime: '2024-01-15T10:33:45Z',
       endTime: '2024-01-15T10:34:00Z',
       duration: '15s',
-      output: { 
-        characters: 7832, 
-        paragraphs: 12,
-        sections: ['Header', 'Scope of Work', 'Compensation', 'Confidentiality', 'Termination'],
-        structure_analysis: 'Well-formatted legal document with clear section divisions'
-      }
+      output: { characters: 7832, paragraphs: 12 }
     },
     {
       id: '4',
@@ -91,17 +70,7 @@ const DocumentDetail = () => {
       startTime: '2024-01-15T10:34:00Z',
       endTime: '2024-01-15T10:34:30Z',
       duration: '30s',
-      output: { 
-        entitiesFound: 9, 
-        types: ['ORG', 'LOC', 'DATE', 'MONEY'],
-        entities: [
-          { text: 'TechCorp Inc.', type: 'ORG', confidence: 0.95 },
-          { text: 'California', type: 'LOC', confidence: 0.92 },
-          { text: 'John Smith Consulting LLC', type: 'ORG', confidence: 0.98 },
-          { text: 'January 15, 2024', type: 'DATE', confidence: 0.99 },
-          { text: '$150', type: 'MONEY', confidence: 0.94 }
-        ]
-      }
+      output: { entitiesFound: 9, types: ['ORG', 'LOC', 'DATE', 'MONEY'] }
     },
     {
       id: '5',
@@ -110,13 +79,7 @@ const DocumentDetail = () => {
       startTime: '2024-01-15T10:34:30Z',
       endTime: '2024-01-15T10:35:00Z',
       duration: '30s',
-      output: { 
-        keyPhrases: 15, 
-        sentiment: 'neutral',
-        risk_score: 0.2,
-        compliance_check: 'Passed',
-        key_terms: ['Professional Services', 'Confidentiality', 'Payment Terms', 'Termination Clause']
-      }
+      output: { keyPhrases: 15, sentiment: 'neutral' }
     }
   ];
 
@@ -125,7 +88,7 @@ const DocumentDetail = () => {
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'running':
-        return <Clock className="w-4 h-4 text-orange-600" />;
+        return <Clock className="w-4 h-4 text-blue-600" />;
       case 'failed':
         return <AlertCircle className="w-4 h-4 text-red-600" />;
       default:
@@ -138,7 +101,7 @@ const DocumentDetail = () => {
       case 'completed':
         return 'bg-green-100 text-green-700';
       case 'running':
-        return 'bg-orange-100 text-orange-700';
+        return 'bg-blue-100 text-blue-700';
       case 'failed':
         return 'bg-red-100 text-red-700';
       default:
@@ -151,10 +114,10 @@ const DocumentDetail = () => {
       <Header />
       <div className="flex pt-16">
         <Sidebar />
-        <main className="flex-1 ml-64">
-          <div className="p-6">
+        <main className="flex-1 p-6 ml-64">
+          <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-6">
+            <div className="mb-8">
               <div className="flex items-center space-x-4 mb-4">
                 <Button 
                   variant="ghost" 
@@ -164,7 +127,7 @@ const DocumentDetail = () => {
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-8 h-8 text-orange-600" />
+                  <FileText className="w-8 h-8 text-blue-600" />
                   <div>
                     <h1 className="text-3xl font-bold text-slate-900">{document.name}</h1>
                     <p className="text-slate-600">{document.directory} • {document.type} • {document.size}</p>
@@ -185,188 +148,50 @@ const DocumentDetail = () => {
               </div>
             </div>
 
-            {/* Resizable Layout */}
-            <div className="h-[calc(100vh-280px)] border border-slate-200 rounded-lg overflow-hidden">
-              <ResizablePanelGroup direction="horizontal">
-                <ResizablePanel 
-                  defaultSize={isRightPanelMinimized ? 95 : 60} 
-                  minSize={40}
-                  maxSize={95}
-                  className="bg-slate-100"
-                >
-                  <div className="h-full flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
-                      <h3 className="font-medium text-slate-900">Document Viewer</h3>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          Zoom In
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Zoom Out
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 p-4">
-                      <div className="w-full h-full bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                        <iframe
-                          src="/placeholder.pdf"
-                          className="w-full h-full rounded-lg"
-                          title={document.name}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </ResizablePanel>
-                
-                <ResizableHandle withHandle />
-                
-                <ResizablePanel 
-                  defaultSize={isRightPanelMinimized ? 5 : 40} 
-                  minSize={5}
-                  maxSize={60}
-                  className="bg-white"
-                >
-                  <div className="h-full flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200">
-                      <h3 className={`font-medium text-slate-900 ${isRightPanelMinimized ? 'hidden' : ''}`}>
-                        Processing Details
-                      </h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsRightPanelMinimized(!isRightPanelMinimized)}
-                        className="p-1"
-                      >
-                        {isRightPanelMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    
-                    {!isRightPanelMinimized && (
-                      <div className="flex-1 overflow-auto">
-                        <Tabs defaultValue="overview" className="h-full">
-                          <TabsList className="grid w-full grid-cols-3 m-4 mb-0">
-                            <TabsTrigger value="overview">Overview</TabsTrigger>
-                            <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
-                            <TabsTrigger value="outputs">Outputs</TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="overview" className="p-4 space-y-4">
-                            <Card>
-                              <CardHeader className="pb-2">
-                                <CardTitle className="text-sm">Document Status</CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Total Steps:</span>
-                                  <span className="text-xs font-medium">{pipelineSteps.length}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Completed:</span>
-                                  <span className="text-xs font-medium text-green-600">
-                                    {pipelineSteps.filter(s => s.status === 'completed').length}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Processing Time:</span>
-                                  <span className="text-xs font-medium">2m 45s</span>
-                                </div>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card>
-                              <CardHeader className="pb-2">
-                                <CardTitle className="text-sm">Quick Stats</CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Pages:</span>
-                                  <span className="text-xs font-medium">3</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Words:</span>
-                                  <span className="text-xs font-medium">1,247</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-xs text-slate-600">Entities:</span>
-                                  <span className="text-xs font-medium">9</span>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </TabsContent>
-                          
-                          <TabsContent value="pipeline" className="p-4">
-                            <div className="space-y-3">
-                              {pipelineSteps.map((step, index) => (
-                                <div key={step.id} className="p-3 border border-slate-200 rounded-lg">
-                                  <div className="flex items-center space-x-3 mb-2">
-                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
-                                      {index + 1}
-                                    </div>
-                                    {getStatusIcon(step.status)}
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-slate-900 text-sm">{step.name}</h4>
-                                      {step.duration && (
-                                        <p className="text-xs text-slate-500">{step.duration}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <Badge className={`text-xs ${getStatusColor(step.status)}`}>
-                                      {step.status}
-                                    </Badge>
-                                  </div>
-                                </div>
+            {/* Pipeline Status */}
+            <div className="mb-8">
+              <Card className="border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-slate-900">Processing Pipeline</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {pipelineSteps.map((step, index) => (
+                      <div key={step.id} className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-medium">
+                            {index + 1}
+                          </div>
+                          {getStatusIcon(step.status)}
+                          <div>
+                            <h4 className="font-medium text-slate-900">{step.name}</h4>
+                            {step.duration && (
+                              <p className="text-sm text-slate-500">Duration: {step.duration}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1" />
+                        <div className="text-right">
+                          <Badge className={getStatusColor(step.status)}>
+                            {step.status}
+                          </Badge>
+                          {step.output && (
+                            <div className="mt-1 text-xs text-slate-500">
+                              {Object.entries(step.output).map(([key, value]) => (
+                                <div key={key}>{key}: {typeof value === 'number' ? value.toLocaleString() : String(value)}</div>
                               ))}
                             </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="outputs" className="p-4">
-                            <Tabs defaultValue="step1" orientation="vertical" className="h-full">
-                              <TabsList className="grid grid-cols-1 h-auto mb-4">
-                                {pipelineSteps.map((step, index) => (
-                                  <TabsTrigger 
-                                    key={step.id} 
-                                    value={`step${index + 1}`}
-                                    className="text-xs justify-start"
-                                  >
-                                    {step.name}
-                                  </TabsTrigger>
-                                ))}
-                              </TabsList>
-                              
-                              {pipelineSteps.map((step, index) => (
-                                <TabsContent 
-                                  key={step.id} 
-                                  value={`step${index + 1}`}
-                                  className="space-y-3 mt-0"
-                                >
-                                  <div className="flex items-center justify-between mb-3">
-                                    <h4 className="font-medium text-slate-900 text-sm">{step.name}</h4>
-                                    <Button variant="outline" size="sm">
-                                      <Copy className="w-3 h-3 mr-1" />
-                                      Copy
-                                    </Button>
-                                  </div>
-                                  
-                                  {step.output && (
-                                    <div className="bg-slate-50 p-3 rounded-lg">
-                                      <pre className="text-xs text-slate-700 whitespace-pre-wrap">
-                                        {JSON.stringify(step.output, null, 2)}
-                                      </pre>
-                                    </div>
-                                  )}
-                                </TabsContent>
-                              ))}
-                            </Tabs>
-                          </TabsContent>
-                        </Tabs>
-                      )}
-                    </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Document Viewer */}
+            <DocumentViewer />
           </div>
         </main>
       </div>
